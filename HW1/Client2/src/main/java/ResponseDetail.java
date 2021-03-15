@@ -12,6 +12,22 @@ public class ResponseDetail {
     this.responseContent = responseContent;
   }
 
+  public long getStartTimestamp() {
+    return startTimestamp;
+  }
+
+  public long getLatency() {
+    return latency;
+  }
+
+  public String getRequestType() {
+    return requestType;
+  }
+
+  public String getResponseContent() {
+    return responseContent;
+  }
+
   @Override
   public String toString() {
     return startTimestamp + " " + latency + " " + requestType + " " + responseContent + "\n";

@@ -1,11 +1,16 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.stream.Collectors;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 @WebServlet(name = "SkierServlet")
 public class SkierServlet extends HttpServlet {
@@ -18,7 +23,7 @@ public class SkierServlet extends HttpServlet {
     // check we have a URL!
     if (urlPath == null || urlPath.isEmpty()) {
       res.setStatus(HttpServletResponse.SC_NOT_FOUND);
-      res.getWriter().write("missing paramterers");
+      res.getWriter().write("missing parameters");
       return;
     }
 
@@ -28,17 +33,30 @@ public class SkierServlet extends HttpServlet {
 
     if (!isUrlValid(urlParts)) {
       res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+      res.getWriter().write("url format incorrect");
     } else {
-      res.setStatus(HttpServletResponse.SC_OK);
       // do any sophisticated processing with urlParts which contains all the url params
       // TODO: process url params in `urlParts`
-      BufferedReader buffIn = req.getReader();
-      StringBuilder everything = new StringBuilder();
-      String line;
-      while( (line = buffIn.readLine()) != null) {
-        everything.append(line);
+      int storeId = Integer.parseInt(urlParts[2]);
+      int customerId = Integer.parseInt(urlParts[4]);
+      String date = urlParts[6];
+      String jsonString = req.getParameter("items");
+      JSONArray itemArray = new JSONArray(jsonString);
+      for (int i = 0; i < itemArray.length(); i++) {
+        JSONObject object = itemArray.getJSONObject(i);
+        int itemId = object.getInt("itemId");
+        int amount = object.getInt("amount");
+        PurchaseRecord purchaseRecord = new PurchaseRecord(itemId, amount, storeId, customerId, date);
+        try {
+          PurchaseRecordDao purchaseRecordDao = new PurchaseRecordDao();
+          purchaseRecordDao.createPurchase(purchaseRecord);
+          res.getWriter().write("adding new purchase to db");
+          res.setStatus(HttpServletResponse.SC_OK);
+        } catch (SQLException e) {
+          e.printStackTrace();
+          res.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        }
       }
-      res.getWriter().write(String.valueOf(everything));
     }
   }
 
@@ -54,6 +72,8 @@ public class SkierServlet extends HttpServlet {
       res.getWriter().write("missing paramterers");
       return;
     }
+
+    System.out.println(urlPath);
 
     String[] urlParts = urlPath.split("/");
     // and now validate url path and return the response status code
@@ -71,8 +91,17 @@ public class SkierServlet extends HttpServlet {
 
   private boolean isUrlValid(String[] urlPath) {
     // TODO: validate the request url path according to the API spec
-    // urlPath  = "/1/seasons/2019/day/1/skier/123"
-    // urlParts = [, 1, seasons, 2019, day, 1, skier, 123]
+    // urlPath  = "store/storeId/customer/customerId/date/xxxxxxxx"
+    // urlParts = [, store, storeId, customer, customerId, date, xxxxxxxx]
+    if (!urlPath[1].equals("store") || !urlPath[3].equals("customer") || !urlPath[5].equals("date")) return false;
+    try {
+      int storeId = Integer.parseInt(urlPath[2]);
+      int customerId = Integer.parseInt(urlPath[4]);
+      DateFormat format = new SimpleDateFormat("yyyyMMdd");
+      Date date = format.parse(urlPath[6]);
+    } catch (NumberFormatException | ParseException e) {
+      return false;
+    }
     return true;
   }
 }

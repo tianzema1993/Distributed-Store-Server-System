@@ -16,4 +16,36 @@ public class Purchase {
       items.add(new Item(maximumItemId));
     }
   }
+
+  public int getStoreId() {
+    return storeId;
+  }
+
+  public void setStoreId(int storeId) {
+    this.storeId = storeId;
+  }
+
+  public int getCustomerId() {
+    return customerId;
+  }
+
+  public void setCustomerId(int customerId) {
+    this.customerId = customerId;
+  }
+
+  public List<Item> getItems() {
+    return items;
+  }
+
+  public void setItems(List<Item> items) {
+    this.items = items;
+  }
+
+  public String getDate() {
+    return date;
+  }
+
+  public void setDate(String date) {
+    this.date = date;
+  }
 }

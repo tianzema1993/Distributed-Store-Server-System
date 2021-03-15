@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Statistic {
 
+  // the first method is used to read a csv file and do the calculation
   public static void calculate() {
     BufferedReader reader = null;
 
@@ -24,7 +25,8 @@ public class Statistic {
       }
       Collections.sort(list);
       System.out.println("The mean response time (in ms): " + (double) sum / list.size());
-      System.out.println("The median response time (in ms): " + (double) (list.get(list.size() / 2) + list.get(list.size() / 2 - 1)) / 2);
+      System.out.println("The median response time (in ms): "
+          + (double) (list.get(list.size() / 2) + list.get(list.size() / 2 - 1)) / 2);
       System.out.println("The maximum response time (in ms): " + list.get(list.size() - 1));
       int index = (int) Math.ceil(99 / 100.0 * list.size());
       System.out.println("The 99th percentile response time (in ms): " + list.get(index - 1));
@@ -39,5 +41,22 @@ public class Statistic {
         }
       }
     }
+  }
+
+  // the second method is used to read from a list and do the calculation
+  public static void calculate(List<ResponseDetail> input) {
+    List<Long> list = new ArrayList<>();
+    long sum = 0;
+    for (ResponseDetail detail: input) {
+      list.add(detail.getLatency());
+      sum += detail.getLatency();
+    }
+    Collections.sort(list);
+    System.out.println("The mean response time (in ms): " + (double) sum / list.size());
+    System.out.println("The median response time (in ms): "
+        + (double) (list.get(list.size() / 2) + list.get(list.size() / 2 - 1)) / 2);
+    System.out.println("The maximum response time (in ms): " + list.get(list.size() - 1));
+    int index = (int) Math.ceil(99 / 100.0 * list.size());
+    System.out.println("The 99th percentile response time (in ms): " + list.get(index - 1));
   }
 }
