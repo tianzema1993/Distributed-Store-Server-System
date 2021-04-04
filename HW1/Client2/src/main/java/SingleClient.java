@@ -65,8 +65,8 @@ public class SingleClient implements Runnable {
     long time1 = System.currentTimeMillis();
     try {
       // Execute the method.
-      long time2 = System.currentTimeMillis();
       int getStatus = client.executeMethod(method);
+      long time2 = System.currentTimeMillis();
       MultiClient.list.add(new ResponseDetail(time1, time2, "POST", String.valueOf(getStatus)));
       if (getStatus == HttpStatus.SC_OK) {
         this.counter.increasePrimeCount();

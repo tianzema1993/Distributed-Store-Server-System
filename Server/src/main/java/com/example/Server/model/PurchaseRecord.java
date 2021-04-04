@@ -1,12 +1,16 @@
 package com.example.Server.model;
 
 public class PurchaseRecord {
+
   private int recordId;
   private int itemId;
   private int amount;
   private int storeId;
   private int customerId;
   private String date;
+
+  public PurchaseRecord() {
+  }
 
   public PurchaseRecord(int itemId, int amount, int storeId, int customerId, String date) {
     this.itemId = itemId;

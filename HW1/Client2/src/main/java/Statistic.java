@@ -24,6 +24,7 @@ public class Statistic {
         sum += Integer.parseInt(data[1]);
       }
       Collections.sort(list);
+      System.out.println("The sum is:" + sum);
       System.out.println("The mean response time (in ms): " + (double) sum / list.size());
       System.out.println("The median response time (in ms): "
           + (double) (list.get(list.size() / 2) + list.get(list.size() / 2 - 1)) / 2);

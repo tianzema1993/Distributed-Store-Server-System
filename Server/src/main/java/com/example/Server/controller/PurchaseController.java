@@ -2,8 +2,17 @@ package com.example.Server.controller;
 
 import com.example.Server.exception.PurchaseNotAddException;
 import com.example.Server.model.PurchaseRecord;
-import com.example.Server.service.PurchaseService;
+import com.example.Server.pools.ChannelFactory;
+import com.google.gson.Gson;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeoutException;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,28 +28,46 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/purchase")
 public class PurchaseController {
 
-  private final PurchaseService purchaseService;
+  private final ObjectPool<Channel> pool;
+  private final Gson gson = new Gson();
 
   @Autowired
-  public PurchaseController(PurchaseService purchaseService) {
-    this.purchaseService = purchaseService;
+  public PurchaseController() throws IOException, TimeoutException {
+    ConnectionFactory factory = new ConnectionFactory();
+    factory.setHost("3.229.130.222");
+    factory.setPort(5672);
+    factory.setConnectionTimeout(10000);
+    factory.setUsername("username");
+    factory.setPassword("password");
+    Connection conn = factory.newConnection();
+    pool = new GenericObjectPool<>(new ChannelFactory(conn));
   }
 
   @RequestMapping(value = "/store/{storeId}/customer/{customerId}/date/{date}", method = RequestMethod.POST)
-  public int createPurchase(HttpServletRequest req, @PathVariable Integer storeId,
-      @PathVariable Integer customerId, @PathVariable String date) throws PurchaseNotAddException {
-    String jsonItems = req.getParameter("items");
-    JSONArray arr = new JSONArray(jsonItems);
-    for (int i = 0; i < arr.length(); i++) {
-      JSONObject item = arr.getJSONObject(i);
-      int itemId = item.getInt("itemId");
-      int amount = item.getInt("amount");
-      PurchaseRecord newPurchase = new PurchaseRecord(itemId, amount, storeId, customerId, date);
-      if (!purchaseService.add(newPurchase)) {
-        throw new PurchaseNotAddException("Purchase can't be added to the db");
+  public String createPurchase(HttpServletRequest req, @PathVariable Integer storeId,
+      @PathVariable Integer customerId, @PathVariable String date) throws Exception {
+    Channel channel = null;
+    try {
+      channel = pool.borrowObject();
+      String EXCHANGE_NAME = "my_exchange";
+      channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+      String jsonItems = req.getParameter("items");
+      JSONArray arr = new JSONArray(jsonItems);
+      for (int i = 0; i < arr.length(); i++) {
+        JSONObject item = arr.getJSONObject(i);
+        int itemId = item.getInt("itemId");
+        int amount = item.getInt("amount");
+        PurchaseRecord purchaseRecord = new PurchaseRecord(itemId, amount, storeId, customerId, date);
+        channel.basicPublish(EXCHANGE_NAME, "", null, gson.toJson(purchaseRecord).getBytes(StandardCharsets.UTF_8));
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      if (channel != null) {
+        pool.returnObject(channel);
       }
     }
-    return 1;
+    return "Purchase added to the queue";
   }
 
   @RequestMapping(value = "/store/{storeId}/customer/{customerId}/date/{date}", method = RequestMethod.GET)

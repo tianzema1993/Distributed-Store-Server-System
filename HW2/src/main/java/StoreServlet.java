@@ -14,6 +14,11 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "StoreServlet")
 public class StoreServlet extends HttpServlet {
 
+  @Override
+  public void init() throws ServletException {
+    super.init();
+  }
+
   protected void doPost(HttpServletRequest req,
       HttpServletResponse res)
       throws ServletException, IOException {
