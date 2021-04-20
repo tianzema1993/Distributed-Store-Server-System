@@ -67,4 +67,16 @@ public class PurchaseRecord {
   public void setDate(String date) {
     this.date = date;
   }
+
+  @Override
+  public String toString() {
+    return "PurchaseRecord{" +
+        "recordId=" + recordId +
+        ", itemId=" + itemId +
+        ", amount=" + amount +
+        ", storeId=" + storeId +
+        ", customerId=" + customerId +
+        ", date='" + date + '\'' +
+        '}';
+  }
 }

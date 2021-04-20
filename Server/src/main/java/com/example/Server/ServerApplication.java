@@ -1,7 +1,6 @@
 package com.example.Server;
 
 import com.example.Server.dao.PurchaseDao;
-import com.example.Server.rabbitMQ.Recv;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +26,9 @@ public class ServerApplication extends SpringBootServletInitializer {
 
   public static void main(String[] args) throws IOException, TimeoutException {
     SpringApplication.run(ServerApplication.class, args);
-    Recv receiver = new Recv(purchaseDao);
-    Thread thread = new Thread(receiver);
-    thread.start();
+    // for RabbitMQ
+//    Recv receiver = new Recv(purchaseDao);
+//    Thread thread = new Thread(receiver);
+//    thread.start();
   }
 }
