@@ -18,4 +18,4 @@ The throughput exceeded 10000, which is 10 times better than the first server ve
 
 Final Result page
 
-<img width="300" height="600" src="photo/result.png"/>
+<img width="400" height="600" src="photo/result.png"/>
